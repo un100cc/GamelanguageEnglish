@@ -432,6 +432,19 @@
     <div style="font-size:13px; color:var(--muted)">Learn real English for real travel adventures!</div>
   </div>
 
+  <!-- Voice selector -->
+  <div class="card" id="voiceCard">
+    <div class="card-title">🔊 Voice Settings</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">เลือกเสียงที่ต้องการ (British = en-GB)</div>
+    <select id="voiceSelect" style="width:100%;background:#0f0c29;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;outline:none" onchange="setVoice(this.value)">
+      <option value="">Loading voices...</option>
+    </select>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+      <button class="speak-btn speak-phrase" data-text="Hello! Welcome to Travel Quest. I am your English guide." onclick="speak(this.dataset.text, this)">🔊 Test Voice</button>
+      <span id="voiceLabel" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+  </div>
+
   <!-- Current level card -->
   <div class="card" id="levelCard">
     <div class="card-title">📚 Current Level</div>
@@ -922,6 +935,7 @@ const LISTEN_DIALOGUES = [
     <em>Traveler:</em> "Window, please."<br>
     <em>Staff:</em> "Any bags to check in?"<br>
     <em>Traveler:</em> "Yes, one large suitcase."`,
+    plain:`At the Airport Counter. Staff: Good morning! Can I see your passport, please? Traveler: Of course. Here you go. Staff: Window or aisle seat? Traveler: Window, please. Staff: Any bags to check in? Traveler: Yes, one large suitcase.`,
     q:"What seat does the traveler want?",
     choices:["Aisle seat","Window seat","Middle seat","Business class"],
     ans:1
@@ -934,6 +948,7 @@ const LISTEN_DIALOGUES = [
     <em>Staff:</em> "Absolutely! It's served from 7 to 10 AM."<br>
     <em>Guest:</em> "Perfect. And what floor am I on?"<br>
     <em>Staff:</em> "Room 504, on the fifth floor."`,
+    plain:`At the Hotel. Guest: Hi, I have a reservation under the name Johnson. Staff: Welcome! Let me check. Yes, a double room for three nights. Guest: Is breakfast included? Staff: Absolutely! It's served from 7 to 10 AM. Guest: Perfect. And what floor am I on? Staff: Room 504, on the fifth floor.`,
     q:"When is breakfast served?",
     choices:["6 to 9 AM","7 to 10 AM","8 to 11 AM","All day"],
     ans:1
@@ -945,6 +960,7 @@ const LISTEN_DIALOGUES = [
     <em>Tourist:</em> "Is it far?"<br>
     <em>Local:</em> "About ten minutes on foot. You'll see a big clock tower — that's a landmark."<br>
     <em>Tourist:</em> "Great, thank you so much!"`,
+    plain:`Asking for Directions. Tourist: Excuse me, how do I get to the central market? Local: Sure! Go straight ahead for two blocks, then turn left at the traffic light. Tourist: Is it far? Local: About ten minutes on foot. You'll see a big clock tower, that's a landmark. Tourist: Great, thank you so much!`,
     q:"What should the tourist look for as a landmark?",
     choices:["A big tree","A red bridge","A big clock tower","A blue sign"],
     ans:2
@@ -1156,13 +1172,21 @@ function answerQuiz(chosen) {
 
   // look up Thai meaning + example from current level vocab/phrases
   const level = getCurrentLevel();
+  // exact vocab/phrase match by answer word
   const vocabHit = level.vocab.find(v => v.w.toLowerCase() === answerText.toLowerCase());
   const phraseHit = level.phrases.find(p => p.p.toLowerCase() === answerText.toLowerCase());
-  const hit = vocabHit || phraseHit;
+  // for fill-in: match phrase by comparing speakText against phrase template (replace [xxx] with wildcard)
+  const phraseFillHit = !vocabHit && !phraseHit && fillMatch
+    ? level.phrases.find(p => {
+        const pattern = p.p.replace(/\[.*?\]/g, '.+').replace(/[.*+?^${}()|[\]\\]/g, m => m === '.' || m === '+' ? m : '\\' + m);
+        return new RegExp(pattern, 'i').test(speakText);
+      })
+    : null;
+  const hit = vocabHit || phraseHit || phraseFillHit;
   const thaiLine = hit
     ? `<div style="margin-top:6px;font-size:13px">
         🇹🇭 <span style="color:var(--gold)">${hit.th}</span><br>
-        📝 <span style="color:#cbd5e1;font-style:italic">${vocabHit ? vocabHit.ex : phraseHit.ex}</span>
+        📝 <span style="color:#cbd5e1;font-style:italic">${hit.ex}</span>
        </div>`
     : '';
 
@@ -1375,7 +1399,15 @@ function startListening() {
 
 function renderListening() {
   const d = LISTEN_DIALOGUES[listenIdx];
-  document.getElementById('listeningScript').innerHTML = `<div class="card" style="margin:0 0 14px; font-size:13px; line-height:1.8">${d.script}</div>`;
+  const plainSafe = d.plain.replace(/"/g,'&quot;');
+  document.getElementById('listeningScript').innerHTML = `
+    <div class="card" style="margin:0 0 14px; font-size:13px; line-height:1.8">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:700;color:var(--accent2)">🎙️ Dialogue</span>
+        <button class="speak-btn speak-phrase" data-text="${plainSafe}" onclick="speak(this.dataset.text, this)">🔊 Listen</button>
+      </div>
+      ${d.script}
+    </div>`;
   document.getElementById('listeningQ').innerHTML = `<div class="quiz-q">❓ ${d.q}</div>`;
   document.getElementById('listeningFeedback').innerHTML = '';
   document.getElementById('btnNextListen').classList.add('section-hidden');
@@ -1599,9 +1631,16 @@ function getBestVoice() {
   if (_cachedVoice) return _cachedVoice;
   const voices = window.speechSynthesis.getVoices();
   _cachedVoice =
-    voices.find(v => v.lang.startsWith('en') && /female|woman|girl|zira|samantha|karen|moira|tessa|fiona|victoria|susan|hazel|catherine/i.test(v.name)) ||
-    voices.find(v => v.lang === 'en-US' && v.localService) ||
-    voices.find(v => v.lang.startsWith('en') && v.localService) ||
+    // 1. Google UK English Female — most natural British female (Chrome online)
+    voices.find(v => v.name === 'Google UK English Female') ||
+    // 2. Any en-GB female by name
+    voices.find(v => v.lang === 'en-GB' && /female|woman|girl|hazel|susan|kate|emma|amy/i.test(v.name)) ||
+    // 3. Any en-GB voice
+    voices.find(v => v.lang === 'en-GB') ||
+    // 4. Google UK English Male fallback
+    voices.find(v => v.name === 'Google UK English Male') ||
+    // 5. Any female English voice
+    voices.find(v => v.lang.startsWith('en') && /female|woman|girl|zira|samantha|karen|moira|tessa|fiona|victoria|susan|hazel/i.test(v.name)) ||
     voices.find(v => v.lang.startsWith('en')) || null;
   return _cachedVoice;
 }
@@ -1623,12 +1662,12 @@ function _doSpeak(text, btn) {
   }
 
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'en-US';
-  utt.rate = 0.88;
-  utt.pitch = 1;
+  utt.lang = 'en-GB';
+  utt.rate = 0.85;
+  utt.pitch = 1.05;
 
   const voice = getBestVoice();
-  if (voice) utt.voice = voice;
+  if (voice) { utt.voice = voice; utt.lang = voice.lang; }
 
   utt.onend = () => {
     if (btn) btn.classList.remove('speaking');
@@ -1669,13 +1708,43 @@ function speakAuto(text) {
   _doSpeak(text, null);
 }
 
+function populateVoiceSelect() {
+  const sel = document.getElementById('voiceSelect');
+  if (!sel) return;
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+  if (!voices.length) return;
+  sel.innerHTML = voices.map((v,i) =>
+    `<option value="${i}" ${_cachedVoice && v.name === _cachedVoice.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`
+  ).join('');
+  const lbl = document.getElementById('voiceLabel');
+  if (lbl && _cachedVoice) lbl.textContent = `✅ ${_cachedVoice.name}`;
+}
+
+function setVoice(idx) {
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+  _cachedVoice = voices[parseInt(idx)] || null;
+  const lbl = document.getElementById('voiceLabel');
+  if (lbl && _cachedVoice) lbl.textContent = `✅ ${_cachedVoice.name}`;
+  localStorage.setItem('selectedVoiceName', _cachedVoice ? _cachedVoice.name : '');
+}
+
 // pre-load & cache voices
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.addEventListener('voiceschanged', () => {
-    _cachedVoice = null; // reset so getBestVoice re-picks
-    getBestVoice();
+    // restore saved voice preference
+    const saved = localStorage.getItem('selectedVoiceName');
+    if (saved) {
+      const found = window.speechSynthesis.getVoices().find(v => v.name === saved);
+      if (found) _cachedVoice = found;
+    } else {
+      _cachedVoice = null;
+      getBestVoice();
+    }
+    populateVoiceSelect();
   });
+  // initial populate after short delay
+  setTimeout(populateVoiceSelect, 500);
 }
 
 // ══════════════════════════════════════
