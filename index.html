@@ -1063,12 +1063,12 @@ function renderLearn() {
     <tr>
       <td>
         <span class="word">${v.w}</span>
-        <button class="speak-btn" onclick="speak(${JSON.stringify(v.w)}, this)" title="Listen">🔊</button>
+        <button class="speak-btn" data-text="${v.w.replace(/"/g,'&quot;')}" onclick="speak(this.dataset.text, this)" title="Listen">🔊</button>
         <br><span class="ipa">${v.ipa}</span>
       </td>
       <td><span class="thai">${v.th}</span></td>
       <td><span class="example">${v.ex}
-        <button class="speak-btn speak-sm" onclick="speak(${JSON.stringify(v.ex)}, this)" title="Listen to example">🔊</button>
+        <button class="speak-btn speak-sm" data-text="${v.ex.replace(/"/g,'&quot;')}" onclick="speak(this.dataset.text, this)" title="Listen to example">🔊</button>
       </span></td>
     </tr>
   `).join('');
@@ -1084,13 +1084,13 @@ function renderPhrases() {
     <div class="phrase-item">
       <div class="phrase-en" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span>💬 ${p.p}</span>
-        <button class="speak-btn speak-phrase" onclick="speak(${JSON.stringify(p.p)}, this)">🔊 Listen</button>
+        <button class="speak-btn speak-phrase" data-text="${p.p.replace(/"/g,'&quot;')}" onclick="speak(this.dataset.text, this)">🔊 Listen</button>
       </div>
       <div class="phrase-ipa">${p.ipa}</div>
       <div class="phrase-th">🇹🇭 ${p.th}</div>
       <div class="phrase-ex" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span>📝 ${p.ex}</span>
-        <button class="speak-btn speak-sm" onclick="speak(${JSON.stringify(p.ex)}, this)">🔊</button>
+        <button class="speak-btn speak-sm" data-text="${p.ex.replace(/"/g,'&quot;')}" onclick="speak(this.dataset.text, this)">🔊</button>
       </div>
     </div>
   `).join('');
@@ -1146,9 +1146,39 @@ function answerQuiz(chosen) {
 
   playSound(correct ? 'correct' : 'wrong');
 
+  // build the full sentence to speak
+  const answerText = q.choices[q.ans];
+  const fillMatch = q.q.match(/['"](.*?_+.*?)['"]/);
+  const speakText = fillMatch
+    ? fillMatch[1].replace(/_+/g, answerText)
+    : answerText;
+  setTimeout(() => speakAuto(speakText), 400);
+
+  // look up Thai meaning + example from current level vocab/phrases
+  const level = getCurrentLevel();
+  const vocabHit = level.vocab.find(v => v.w.toLowerCase() === answerText.toLowerCase());
+  const phraseHit = level.phrases.find(p => p.p.toLowerCase() === answerText.toLowerCase());
+  const hit = vocabHit || phraseHit;
+  const thaiLine = hit
+    ? `<div style="margin-top:6px;font-size:13px">
+        🇹🇭 <span style="color:var(--gold)">${hit.th}</span><br>
+        📝 <span style="color:#cbd5e1;font-style:italic">${vocabHit ? vocabHit.ex : phraseHit.ex}</span>
+       </div>`
+    : '';
+
+  const speakSafe = speakText.replace(/"/g,'&quot;');
   document.getElementById('quizFeedback').innerHTML = correct
-    ? `<div class="feedback correct">✅ Correct! Well done! 🎉</div>`
-    : `<div class="feedback wrong">❌ The answer is: <strong>${q.choices[q.ans]}</strong></div>`;
+    ? `<div class="feedback correct">
+        ✅ Correct! Well done! 🎉
+        <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${speakSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+        <div style="margin-top:6px;font-size:14px;font-weight:700;color:#a7f3d0">${speakText}</div>
+        ${thaiLine}
+      </div>`
+    : `<div class="feedback wrong">
+        ❌ The answer is: <strong>${speakText}</strong>
+        <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${speakSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+        ${thaiLine}
+      </div>`;
 
   document.getElementById('btnNextQ').classList.remove('section-hidden');
 }
@@ -1312,13 +1342,20 @@ function answerPicture(chosen) {
   if (!correct) document.querySelectorAll('#pictureChoices .quiz-choice')[chosen].classList.add('wrong');
 
   playSound(correct ? 'correct' : 'wrong');
+  const picAnswer = scene.choices[scene.ans];
+  setTimeout(() => speakAuto(picAnswer), 400);
 
+  const picSafe = picAnswer.replace(/"/g,'&quot;');
   if (correct) {
-    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback correct">✅ Correct! You got it! +30 XP 🎉</div>
+    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback correct">✅ Correct! You got it! +30 XP 🎉
+      <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${picSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+    </div>
     <button class="btn btn-secondary" style="margin-top:10px" onclick="startPicture(true)">🔄 Next Scene</button>`;
     addXP(30, '🖼️ Scene guessed! +30 XP');
   } else {
-    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback wrong">❌ The answer is: <strong>${scene.choices[scene.ans]}</strong><br>+5 XP for trying!</div>
+    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback wrong">❌ The answer is: <strong>${picAnswer}</strong>
+      <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${picSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+      <br>+5 XP for trying!</div>
     <button class="btn btn-ghost" style="margin-top:10px" onclick="startPicture(true)">🔄 Try Another</button>`;
     addXP(5, '🖼️ +5 XP for trying!');
   }
@@ -1355,12 +1392,19 @@ function answerListening(chosen) {
   if (!correct) document.querySelectorAll('#listeningChoices .quiz-choice')[chosen].classList.add('wrong');
 
   playSound(correct ? 'correct' : 'wrong');
+  const listenAnswer = d.choices[d.ans];
+  setTimeout(() => speakAuto(listenAnswer), 400);
 
+  const listenSafe = listenAnswer.replace(/"/g,'&quot;');
   if (correct) {
-    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback correct">✅ Correct! 🎧 Great listening! +35 XP</div>`;
+    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback correct">✅ Correct! 🎧 Great listening! +35 XP
+      <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${listenSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+    </div>`;
     addXP(35, '🎧 Listening correct! +35 XP');
   } else {
-    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback wrong">❌ Answer: <strong>${d.choices[d.ans]}</strong> — Read again carefully!</div>`;
+    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback wrong">❌ Answer: <strong>${listenAnswer}</strong>
+      <button class="speak-btn speak-sm" style="margin-left:6px" data-text="${listenSafe}" onclick="speakAuto(this.dataset.text)">🔊</button>
+      — Read again carefully!</div>`;
     addXP(10, '🎧 +10 XP for trying!');
   }
   document.getElementById('btnNextListen').classList.remove('section-hidden');
@@ -1548,45 +1592,90 @@ function playSound(type) {
 }
 
 let _speakBtn = null;
+let _cachedVoice = null;
 
-function speak(text, btn) {
-  if (!window.speechSynthesis) { showToast('❌ Browser does not support TTS'); return; }
+// Cache the best female English voice once voices are ready
+function getBestVoice() {
+  if (_cachedVoice) return _cachedVoice;
+  const voices = window.speechSynthesis.getVoices();
+  _cachedVoice =
+    voices.find(v => v.lang.startsWith('en') && /female|woman|girl|zira|samantha|karen|moira|tessa|fiona|victoria|susan|hazel|catherine/i.test(v.name)) ||
+    voices.find(v => v.lang === 'en-US' && v.localService) ||
+    voices.find(v => v.lang.startsWith('en') && v.localService) ||
+    voices.find(v => v.lang.startsWith('en')) || null;
+  return _cachedVoice;
+}
 
-  // stop any current speech
-  window.speechSynthesis.cancel();
-
-  // if same button clicked while speaking → just stop
-  if (_speakBtn === btn && btn.classList.contains('speaking')) {
-    btn.classList.remove('speaking');
-    _speakBtn = null;
+function _doSpeak(text, btn) {
+  if (!window.speechSynthesis) {
+    showToast('❌ Browser does not support TTS');
     return;
   }
 
-  if (_speakBtn) _speakBtn.classList.remove('speaking');
-  _speakBtn = btn;
-  btn.classList.add('speaking');
+  // Chrome bug: resume if paused
+  if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+  window.speechSynthesis.cancel();
+
+  if (btn) {
+    if (_speakBtn) _speakBtn.classList.remove('speaking');
+    _speakBtn = btn;
+    btn.classList.add('speaking');
+  }
 
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'en-US';
   utt.rate = 0.88;
   utt.pitch = 1;
 
-  // prefer a natural English voice if available
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.lang.startsWith('en') && v.localService) ||
-                    voices.find(v => v.lang.startsWith('en')) || null;
-  if (preferred) utt.voice = preferred;
+  const voice = getBestVoice();
+  if (voice) utt.voice = voice;
 
-  utt.onend = () => { btn.classList.remove('speaking'); _speakBtn = null; };
-  utt.onerror = () => { btn.classList.remove('speaking'); _speakBtn = null; };
+  utt.onend = () => {
+    if (btn) btn.classList.remove('speaking');
+    if (_speakBtn === btn) _speakBtn = null;
+  };
+  utt.onerror = () => {
+    if (btn) btn.classList.remove('speaking');
+    if (_speakBtn === btn) _speakBtn = null;
+  };
+
+  // Chrome bug: speechSynthesis silently stops after ~15s idle — keepalive
+  const keepAlive = setInterval(() => {
+    if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
+    window.speechSynthesis.pause();
+    window.speechSynthesis.resume();
+  }, 10000);
+  utt.onend = () => {
+    clearInterval(keepAlive);
+    if (btn) btn.classList.remove('speaking');
+    if (_speakBtn === btn) _speakBtn = null;
+  };
 
   window.speechSynthesis.speak(utt);
 }
 
-// pre-load voices (some browsers load async)
+function speak(text, btn) {
+  // toggle off if same button pressed again
+  if (_speakBtn === btn && btn.classList.contains('speaking')) {
+    window.speechSynthesis.cancel();
+    btn.classList.remove('speaking');
+    _speakBtn = null;
+    return;
+  }
+  _doSpeak(text, btn);
+}
+
+function speakAuto(text) {
+  _doSpeak(text, null);
+}
+
+// pre-load & cache voices
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
+  window.speechSynthesis.addEventListener('voiceschanged', () => {
+    _cachedVoice = null; // reset so getBestVoice re-picks
+    getBestVoice();
+  });
 }
 
 // ══════════════════════════════════════
