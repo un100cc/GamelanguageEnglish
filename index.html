@@ -290,6 +290,25 @@
     color: var(--muted);
   }
 
+  /* ─── Speak button ─── */
+  .speak-btn {
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.4);
+    border-radius: 20px;
+    color: var(--accent2);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 8px;
+    transition: all 0.2s;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .speak-btn:hover { background: rgba(6,182,212,0.3); }
+  .speak-btn.speaking { background: var(--accent2); color: #0f0c29; animation: pulse 0.6s infinite alternate; }
+  .speak-sm { font-size: 11px; padding: 1px 6px; }
+  .speak-phrase { font-size: 12px; padding: 3px 10px; }
+  @keyframes pulse { from { opacity:1; } to { opacity:0.5; } }
+
   /* ─── Toast ─── */
   .toast {
     position: fixed;
@@ -987,6 +1006,7 @@ function tryUnlockNextLevel() {
   if (nextId <= LEVELS.length && !state.unlockedLevels.includes(nextId)) {
     state.unlockedLevels.push(nextId);
     showToast(`🔓 Level ${nextId} Unlocked!`);
+    playSound('unlock');
     checkAchievements();
   }
 }
@@ -1039,11 +1059,17 @@ function renderLearn() {
   const level = getCurrentLevel();
   document.getElementById('learnTitle').innerHTML = `📖 ${level.name}: ${level.topic} <span class="cefr-tag">${level.cefr}</span>`;
   const tbody = document.getElementById('vocabBody');
-  tbody.innerHTML = level.vocab.map(v => `
+  tbody.innerHTML = level.vocab.map((v,i) => `
     <tr>
-      <td><span class="word">${v.w}</span><br><span class="ipa">${v.ipa}</span></td>
+      <td>
+        <span class="word">${v.w}</span>
+        <button class="speak-btn" onclick="speak(${JSON.stringify(v.w)}, this)" title="Listen">🔊</button>
+        <br><span class="ipa">${v.ipa}</span>
+      </td>
       <td><span class="thai">${v.th}</span></td>
-      <td><span class="example">${v.ex}</span></td>
+      <td><span class="example">${v.ex}
+        <button class="speak-btn speak-sm" onclick="speak(${JSON.stringify(v.ex)}, this)" title="Listen to example">🔊</button>
+      </span></td>
     </tr>
   `).join('');
 }
@@ -1056,10 +1082,16 @@ function renderPhrases() {
   const level = getCurrentLevel();
   document.getElementById('phraseList').innerHTML = level.phrases.map(p => `
     <div class="phrase-item">
-      <div class="phrase-en">💬 ${p.p}</div>
+      <div class="phrase-en" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span>💬 ${p.p}</span>
+        <button class="speak-btn speak-phrase" onclick="speak(${JSON.stringify(p.p)}, this)">🔊 Listen</button>
+      </div>
       <div class="phrase-ipa">${p.ipa}</div>
       <div class="phrase-th">🇹🇭 ${p.th}</div>
-      <div class="phrase-ex">📝 ${p.ex}</div>
+      <div class="phrase-ex" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span>📝 ${p.ex}</span>
+        <button class="speak-btn speak-sm" onclick="speak(${JSON.stringify(p.ex)}, this)">🔊</button>
+      </div>
     </div>
   `).join('');
 }
@@ -1112,6 +1144,8 @@ function answerQuiz(chosen) {
   quizState.hits.push(correct);
   if (correct) quizState.score++;
 
+  playSound(correct ? 'correct' : 'wrong');
+
   document.getElementById('quizFeedback').innerHTML = correct
     ? `<div class="feedback correct">✅ Correct! Well done! 🎉</div>`
     : `<div class="feedback wrong">❌ The answer is: <strong>${q.choices[q.ans]}</strong></div>`;
@@ -1137,6 +1171,7 @@ function finishQuiz() {
 
   let xpEarned = pass ? 80 : 30;
   addXP(xpEarned, `Quiz done! +${xpEarned} XP`);
+  playSound(pass ? 'xp' : 'wrong');
 
   document.getElementById('resultEmoji').textContent = pct >= 90 ? '🏆' : pct >= 80 ? '🌟' : pct >= 60 ? '👍' : '😅';
   document.getElementById('resultTitle').textContent = pct >= 90 ? 'Excellent!' : pct >= 80 ? 'Great Job!' : pct >= 60 ? 'Good Try!' : 'Keep Practicing!';
@@ -1225,11 +1260,15 @@ function checkSentence() {
 //  PICTURE SCENE
 // ══════════════════════════════════════
 
-let picState = { scene: null, hintsRevealed: 0 };
+let picState = { scene: null, hintsRevealed: 0, idx: 0 };
 
-function startPicture() {
-  const idx = Math.min(state.currentLevel - 1, PICTURE_SCENES.length - 1);
-  picState.scene = PICTURE_SCENES[idx];
+function startPicture(next = false) {
+  if (next) {
+    picState.idx = (picState.idx + 1) % PICTURE_SCENES.length;
+  } else {
+    picState.idx = Math.min(state.currentLevel - 1, PICTURE_SCENES.length - 1);
+  }
+  picState.scene = PICTURE_SCENES[picState.idx];
   picState.hintsRevealed = 1;
   showPage('pagePicture');
   renderPicture();
@@ -1272,13 +1311,15 @@ function answerPicture(chosen) {
   document.querySelectorAll('#pictureChoices .quiz-choice')[scene.ans].classList.add('correct');
   if (!correct) document.querySelectorAll('#pictureChoices .quiz-choice')[chosen].classList.add('wrong');
 
+  playSound(correct ? 'correct' : 'wrong');
+
   if (correct) {
     document.getElementById('pictureFeedback').innerHTML = `<div class="feedback correct">✅ Correct! You got it! +30 XP 🎉</div>
-    <button class="btn btn-secondary" style="margin-top:10px" onclick="startPicture()">🔄 Next Scene</button>`;
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="startPicture(true)">🔄 Next Scene</button>`;
     addXP(30, '🖼️ Scene guessed! +30 XP');
   } else {
     document.getElementById('pictureFeedback').innerHTML = `<div class="feedback wrong">❌ The answer is: <strong>${scene.choices[scene.ans]}</strong><br>+5 XP for trying!</div>
-    <button class="btn btn-ghost" style="margin-top:10px" onclick="startPicture()">🔄 Try Another</button>`;
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="startPicture(true)">🔄 Try Another</button>`;
     addXP(5, '🖼️ +5 XP for trying!');
   }
 }
@@ -1312,6 +1353,8 @@ function answerListening(chosen) {
   document.querySelectorAll('#listeningChoices .quiz-choice').forEach(b => b.classList.add('disabled'));
   document.querySelectorAll('#listeningChoices .quiz-choice')[d.ans].classList.add('correct');
   if (!correct) document.querySelectorAll('#listeningChoices .quiz-choice')[chosen].classList.add('wrong');
+
+  playSound(correct ? 'correct' : 'wrong');
 
   if (correct) {
     document.getElementById('listeningFeedback').innerHTML = `<div class="feedback correct">✅ Correct! 🎧 Great listening! +35 XP</div>`;
@@ -1432,6 +1475,118 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════
+//  TEXT-TO-SPEECH
+// ══════════════════════════════════════
+
+// ─── Sound Effects ───
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.value = 0.4;
+    master.connect(ctx.destination);
+
+    if (type === 'correct') {
+      // happy ascending chime
+      [[523, 0, 0.12], [659, 0.1, 0.12], [784, 0.2, 0.15], [1047, 0.32, 0.3]].forEach(([freq, start, dur]) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0, ctx.currentTime + start);
+        g.gain.linearRampToValueAtTime(0.6, ctx.currentTime + start + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.connect(g); g.connect(master);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur + 0.05);
+      });
+    } else if (type === 'wrong') {
+      // low buzzer
+      [[220, 0, 0.15], [180, 0.15, 0.25]].forEach(([freq, start, dur]) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sawtooth';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.5, ctx.currentTime + start);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.connect(g); g.connect(master);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur + 0.05);
+      });
+    } else if (type === 'xp') {
+      // coin collect
+      [[880, 0, 0.08], [1100, 0.07, 0.1], [1320, 0.14, 0.15]].forEach(([freq, start, dur]) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.3, ctx.currentTime + start);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.connect(g); g.connect(master);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur + 0.05);
+      });
+    } else if (type === 'unlock') {
+      // fanfare
+      [[523,0,0.1],[659,0.1,0.1],[784,0.2,0.1],[1047,0.3,0.4]].forEach(([freq,start,dur]) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.5, ctx.currentTime + start);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.connect(g); g.connect(master);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur + 0.05);
+      });
+    }
+    setTimeout(() => ctx.close(), 1500);
+  } catch(e) {}
+}
+
+let _speakBtn = null;
+
+function speak(text, btn) {
+  if (!window.speechSynthesis) { showToast('❌ Browser does not support TTS'); return; }
+
+  // stop any current speech
+  window.speechSynthesis.cancel();
+
+  // if same button clicked while speaking → just stop
+  if (_speakBtn === btn && btn.classList.contains('speaking')) {
+    btn.classList.remove('speaking');
+    _speakBtn = null;
+    return;
+  }
+
+  if (_speakBtn) _speakBtn.classList.remove('speaking');
+  _speakBtn = btn;
+  btn.classList.add('speaking');
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-US';
+  utt.rate = 0.88;
+  utt.pitch = 1;
+
+  // prefer a natural English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang.startsWith('en') && v.localService) ||
+                    voices.find(v => v.lang.startsWith('en')) || null;
+  if (preferred) utt.voice = preferred;
+
+  utt.onend = () => { btn.classList.remove('speaking'); _speakBtn = null; };
+  utt.onerror = () => { btn.classList.remove('speaking'); _speakBtn = null; };
+
+  window.speechSynthesis.speak(utt);
+}
+
+// pre-load voices (some browsers load async)
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
 }
 
 // ══════════════════════════════════════
