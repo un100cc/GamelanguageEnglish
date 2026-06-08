@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>✈️ Travel Quest — English RPG</title>
+<style>
+  :root {
+    --bg: #0f0c29;
+    --card: #1a1740;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #2d2b5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 80px;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .game-title { font-size: 18px; font-weight: 700; color: var(--gold); }
+  .char-badge {
+    background: var(--accent);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .xp-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .xp-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #312e81;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .xp-text { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .level-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 12px 0;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ─── Vocab Table ─── */
+  .vocab-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .vocab-table th {
+    background: #312e81;
+    color: var(--gold);
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .vocab-table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.4;
+  }
+  .vocab-table tr:last-child td { border-bottom: none; }
+  .vocab-table tr:hover td { background: rgba(124,58,237,0.1); }
+  .word { font-weight: 700; color: var(--accent2); }
+  .ipa { color: var(--muted); font-size: 11px; font-style: italic; }
+  .thai { color: var(--gold); font-size: 12px; }
+  .example { color: #cbd5e1; font-size: 12px; }
+
+  /* ─── Phrases ─── */
+  .phrase-item {
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .phrase-en { font-weight: 600; color: var(--accent2); font-size: 14px; }
+  .phrase-ipa { color: var(--muted); font-size: 11px; font-style: italic; }
+  .phrase-th { color: var(--gold); font-size: 12px; margin: 2px 0; }
+  .phrase-ex { color: #cbd5e1; font-size: 12px; }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #5b21b6); color: #fff; }
+  .btn-secondary { background: linear-gradient(135deg, #0891b2, var(--accent2)); color: #fff; }
+  .btn-gold { background: linear-gradient(135deg, #d97706, var(--gold)); color: #1a1740; }
+  .btn-green { background: linear-gradient(135deg, #059669, var(--green)); color: #fff; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    padding: 10px;
+  }
+  .btn-sm {
+    display: inline-block;
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  /* ─── Quiz ─── */
+  .quiz-q {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .quiz-progress { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+  .quiz-choice {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: #1e1b4b;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .quiz-choice:hover { border-color: var(--accent); background: rgba(124,58,237,0.15); }
+  .quiz-choice.correct { border-color: var(--green); background: rgba(16,185,129,0.15); color: var(--green); }
+  .quiz-choice.wrong { border-color: var(--red); background: rgba(239,68,68,0.15); color: var(--red); }
+  .quiz-choice.disabled { pointer-events: none; opacity: 0.7; }
+
+  /* ─── Feedback ─── */
+  .feedback {
+    border-radius: 12px;
+    padding: 14px;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .feedback.correct { background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(239,68,68,0.12); border: 1px solid var(--red); color: #fca5a5; }
+  .feedback.info { background: rgba(124,58,237,0.12); border: 1px solid var(--accent); color: #c4b5fd; }
+  .feedback.xp { background: rgba(245,158,11,0.12); border: 1px solid var(--gold); color: var(--gold); }
+
+  /* ─── Score bar ─── */
+  .score-wrap { display: flex; gap: 4px; margin-bottom: 8px; }
+  .score-dot {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+  }
+  .score-dot.hit { background: var(--green); }
+  .score-dot.miss { background: var(--red); }
+
+  /* ─── Menu ─── */
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .menu-btn {
+    background: #1e1b4b;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  .menu-btn:hover, .menu-btn:active { border-color: var(--accent); background: rgba(124,58,237,0.15); }
+  .menu-icon { font-size: 24px; margin-bottom: 4px; }
+
+  /* ─── Section ─── */
+  .section-hidden { display: none !important; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* ─── Level badge ─── */
+  .level-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cefr-tag {
+    display: inline-block;
+    background: #312e81;
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ─── Sentence builder ─── */
+  .word-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .chip {
+    background: #312e81;
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .chip:hover { background: var(--accent); color: #fff; }
+  .chip.used { opacity: 0.3; pointer-events: none; }
+  .sentence-box {
+    min-height: 48px;
+    background: #0f0c29;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    word-break: break-word;
+  }
+
+  /* ─── Picture scene ─── */
+  .scene-emoji { font-size: 60px; text-align: center; margin: 12px 0; }
+  .scene-hints { list-style: none; padding: 0; }
+  .scene-hints li {
+    background: #1e1b4b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ─── Bottom nav ─── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #1a1740;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .nav-item.active { color: var(--accent2); }
+  .nav-item span:first-child { font-size: 20px; }
+
+  /* ─── Scrollable table ─── */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ─── Input ─── */
+  .text-input {
+    width: 100%;
+    background: #0f0c29;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+  .text-input:focus { border-color: var(--accent); }
+
+  /* ─── Achievement ─── */
+  .achievement {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .achievement-icon { font-size: 28px; }
+  .achievement-name { font-weight: 700; color: var(--gold); font-size: 14px; }
+  .achievement-desc { font-size: 12px; color: var(--muted); }
+
+  @keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pop { animation: pop 0.4s ease; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<div class="header">
+  <div class="header-top">
+    <div class="game-title">✈️ Travel Quest</div>
+    <div class="char-badge" id="charBadge">🧭 Explorer</div>
+  </div>
+  <div class="level-badge">
+    <span id="levelLabel">⭐ Level 1</span>
+    <span class="cefr-tag" id="cefrLabel">Pre-A1</span>
+    <span style="margin-left:auto; font-size:12px; color:var(--gold)">🏆 <span id="totalXP">0</span> XP</span>
+  </div>
+  <div class="xp-bar-wrap" style="margin-top:6px">
+    <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+    <div class="xp-text" id="xpText">0 / 100</div>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════
+     PAGE: HOME
+═══════════════════════════════════ -->
+<div id="pageHome">
+  <!-- Hero -->
+  <div class="card" style="text-align:center; background: linear-gradient(135deg,#1e1b4b,#312e81)">
+    <div style="font-size:56px; margin-bottom:8px">🌍</div>
+    <div style="font-size:18px; font-weight:700; color:var(--gold); margin-bottom:4px">Travel & Tourism RPG</div>
+    <div style="font-size:13px; color:var(--muted)">Learn real English for real travel adventures!</div>
+  </div>
+
+  <!-- Current level card -->
+  <div class="card" id="levelCard">
+    <div class="card-title">📚 Current Level</div>
+    <div id="levelSummary"></div>
+    <button class="btn btn-primary" onclick="showPage('pageLearn')">📖 Learn Vocabulary</button>
+    <button class="btn btn-secondary" onclick="startQuiz()">🎯 Quick Quiz</button>
+  </div>
+
+  <!-- Activities menu -->
+  <div class="card">
+    <div class="card-title">🎮 Activities</div>
+    <div class="menu-grid">
+      <div class="menu-btn" onclick="showPage('pagePhrases')">
+        <div class="menu-icon">💬</div>
+        <div>Conversation</div>
+      </div>
+      <div class="menu-btn" onclick="startSentence()">
+        <div class="menu-icon">✏️</div>
+        <div>Make Sentence</div>
+      </div>
+      <div class="menu-btn" onclick="startPicture()">
+        <div class="menu-icon">🖼️</div>
+        <div>Guess Scene</div>
+      </div>
+      <div class="menu-btn" onclick="startListening()">
+        <div class="menu-icon">🎧</div>
+        <div>Listening</div>
+      </div>
+      <div class="menu-btn" onclick="showPage('pageProgress')">
+        <div class="menu-icon">📊</div>
+        <div>Progress</div>
+      </div>
+      <div class="menu-btn" onclick="showPage('pageTopics')">
+        <div class="menu-icon">🗺️</div>
+        <div>Topics</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: LEARN
+═══════════════════════════════════ -->
+<div id="pageLearn" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title" id="learnTitle">📖 Vocabulary</div>
+    <div class="table-scroll">
+      <table class="vocab-table" id="vocabTable">
+        <thead>
+          <tr>
+            <th>Word / Phrase</th>
+            <th>IPA</th>
+            <th>Thai</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody id="vocabBody"></tbody>
+      </table>
+    </div>
+    <hr class="divider">
+    <button class="btn btn-green" onclick="addXP(20,'📖 Studied vocabulary! +20 XP'); showPage('pageHome')">✅ Done Studying (+20 XP)</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: PHRASES
+═══════════════════════════════════ -->
+<div id="pagePhrases" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">💬 Conversation Phrases</div>
+    <div id="phraseList"></div>
+    <hr class="divider">
+    <button class="btn btn-green" onclick="addXP(15,'💬 Learned phrases! +15 XP'); showPage('pageHome')">✅ Done (+15 XP)</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: QUIZ
+═══════════════════════════════════ -->
+<div id="pageQuiz" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Quit Quiz</button>
+    <div class="card-title">🎯 Quick Quiz</div>
+    <div class="score-wrap" id="scoreDots"></div>
+    <div class="quiz-progress" id="quizProgress"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div id="quizChoices"></div>
+    <div id="quizFeedback"></div>
+    <button class="btn btn-primary section-hidden" id="btnNextQ" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: QUIZ RESULT
+═══════════════════════════════════ -->
+<div id="pageResult" class="section-hidden">
+  <div class="card" style="text-align:center">
+    <div style="font-size:56px" id="resultEmoji">🏆</div>
+    <div style="font-size:22px; font-weight:700; color:var(--gold); margin-bottom:8px" id="resultTitle"></div>
+    <div style="font-size:14px; color:var(--muted); margin-bottom:16px" id="resultScore"></div>
+    <div class="feedback xp" id="resultXP"></div>
+    <div id="resultNextUnlock"></div>
+    <button class="btn btn-primary" onclick="startQuiz()">🔄 Try Again</button>
+    <button class="btn btn-secondary" onclick="showPage('pageLearn')">📖 Review Words</button>
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: SENTENCE
+═══════════════════════════════════ -->
+<div id="pageSentence" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">✏️ Make a Sentence</div>
+    <div class="feedback info" id="sentencePrompt"></div>
+    <div class="sentence-box" id="sentenceBox">Tap words below to build your sentence...</div>
+    <div class="word-chips" id="wordChips"></div>
+    <div id="sentenceFeedback"></div>
+    <button class="btn btn-ghost" onclick="clearSentence()">🗑️ Clear</button>
+    <button class="btn btn-primary" onclick="checkSentence()">✅ Check</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: PICTURE
+═══════════════════════════════════ -->
+<div id="pagePicture" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">🖼️ Guess the Scene</div>
+    <div class="scene-emoji" id="sceneEmoji"></div>
+    <div style="font-size:13px; color:var(--muted); margin-bottom:8px; text-align:center">What travel situation is this? 🤔</div>
+    <ul class="scene-hints" id="sceneHints"></ul>
+    <div style="margin: 12px 0">
+      <button class="btn btn-ghost btn-sm" id="btnRevealHint" onclick="revealHint()">💡 Hint (-5 XP)</button>
+    </div>
+    <div id="pictureChoices"></div>
+    <div id="pictureFeedback"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: LISTENING
+═══════════════════════════════════ -->
+<div id="pageListening" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">🎧 Listening Practice</div>
+    <div class="feedback info" style="margin-bottom:14px">
+      <strong>🎙️ Simulated Audio Dialogue</strong><br>
+      Read the conversation carefully, then answer the question!
+    </div>
+    <div id="listeningScript"></div>
+    <div id="listeningQ"></div>
+    <div id="listeningChoices"></div>
+    <div id="listeningFeedback"></div>
+    <button class="btn btn-primary section-hidden" id="btnNextListen" onclick="nextListening()">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: PROGRESS
+═══════════════════════════════════ -->
+<div id="pageProgress" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">📊 My Progress</div>
+    <div id="progressContent"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏅 Achievements</div>
+    <div id="achievementList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE: TOPICS
+═══════════════════════════════════ -->
+<div id="pageTopics" class="section-hidden">
+  <div class="card">
+    <button class="btn btn-ghost" onclick="showPage('pageHome')">← Back</button>
+    <div class="card-title">🗺️ All Levels</div>
+    <div id="topicsList"></div>
+  </div>
+</div>
+
+<!-- ─── BOTTOM NAV ─── -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="showPage('pageHome');setNav('nav-home')">
+    <span>🏠</span><span>Home</span>
+  </div>
+  <div class="nav-item" id="nav-learn" onclick="showPage('pageLearn');setNav('nav-learn')">
+    <span>📖</span><span>Learn</span>
+  </div>
+  <div class="nav-item" id="nav-quiz" onclick="startQuiz();setNav('nav-quiz')">
+    <span>🎯</span><span>Quiz</span>
+  </div>
+  <div class="nav-item" id="nav-prog" onclick="showPage('pageProgress');setNav('nav-prog')">
+    <span>📊</span><span>Progress</span>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  GAME DATA
+// ══════════════════════════════════════
+
+const LEVELS = [
+  {
+    id: 1, name: "Level 1", cefr: "Pre-A1 / A1",
+    topic: "Airport Basics ✈️",
+    char: "🧭 Travel Rookie",
+    xpNeeded: 100,
+    vocab: [
+      { w:"airport",   ipa:"/ˈeə.pɔːt/",      th:"สนามบิน",        ex:"We go to the airport." },
+      { w:"ticket",    ipa:"/ˈtɪk.ɪt/",        th:"ตั๋ว",           ex:"I have a ticket." },
+      { w:"passport",  ipa:"/ˈpɑːs.pɔːt/",     th:"หนังสือเดินทาง", ex:"Show your passport." },
+      { w:"bag",       ipa:"/bæɡ/",             th:"กระเป๋า",        ex:"This is my bag." },
+      { w:"hotel",     ipa:"/həʊˈtel/",         th:"โรงแรม",         ex:"I stay at a hotel." },
+      { w:"bus",       ipa:"/bʌs/",             th:"รถบัส",          ex:"Take the bus." },
+      { w:"taxi",      ipa:"/ˈtæk.si/",         th:"แท็กซี่",        ex:"Call a taxi." },
+      { w:"map",       ipa:"/mæp/",             th:"แผนที่",         ex:"Use a map." },
+      { w:"money",     ipa:"/ˈmʌn.i/",          th:"เงิน",           ex:"I need money." },
+      { w:"water",     ipa:"/ˈwɔː.tər/",        th:"น้ำ",            ex:"Give me water." },
+      { w:"food",      ipa:"/fuːd/",            th:"อาหาร",          ex:"Where is food?" },
+      { w:"toilet",    ipa:"/ˈtɔɪ.lət/",        th:"ห้องน้ำ",        ex:"Where is the toilet?" },
+      { w:"door",      ipa:"/dɔːr/",            th:"ประตู",          ex:"Open the door." },
+      { w:"seat",      ipa:"/siːt/",            th:"ที่นั่ง",         ex:"This is my seat." },
+      { w:"help",      ipa:"/help/",            th:"ช่วย",           ex:"Help me, please." },
+    ],
+    phrases: [
+      { p:"Where is the toilet?", ipa:"/weər ɪz ðə ˈtɔɪ.lət/", th:"ห้องน้ำอยู่ที่ไหน?", ex:"Excuse me, where is the toilet?" },
+      { p:"How much is this?",    ipa:"/haʊ mʌtʃ ɪz ðɪs/",    th:"อันนี้ราคาเท่าไหร่?", ex:"How much is this ticket?" },
+      { p:"I need help.",         ipa:"/aɪ niːd help/",         th:"ฉันต้องการความช่วยเหลือ", ex:"Excuse me, I need help." },
+      { p:"One ticket, please.",  ipa:"/wʌn ˈtɪk.ɪt pliːz/",  th:"ขอตั๋วหนึ่งใบ", ex:"One ticket to Bangkok, please." },
+      { p:"Thank you very much.", ipa:"/θæŋk juː ˈver.i mʌtʃ/",th:"ขอบคุณมากครับ/ค่ะ", ex:"Thank you very much for your help!" },
+      { p:"My name is ___.",      ipa:"/maɪ neɪm ɪz/",         th:"ฉันชื่อ___", ex:"My name is Tom." },
+    ],
+    quiz: [
+      { q:"What do you say when you need to know where a toilet is?", choices:["Where is the toilet?","What is your name?","Give me food.","Open the door."], ans:0 },
+      { q:"'ตั๋ว' in English is:", choices:["passport","ticket","bag","seat"], ans:1 },
+      { q:"'หนังสือเดินทาง' in English is:", choices:["map","money","ticket","passport"], ans:3 },
+      { q:"Fill in: '___ much is this?'", choices:["What","How","Where","Who"], ans:1 },
+      { q:"'สนามบิน' in English is:", choices:["hotel","bus","airport","taxi"], ans:2 },
+      { q:"You want help. You say:", choices:["Thank you.","I need help.","How much?","My name is Tom."], ans:1 },
+      { q:"'แผนที่' in English is:", choices:["money","map","food","water"], ans:1 },
+      { q:"You want one ticket. You say:", choices:["I need help.","Where is toilet?","One ticket, please.","Thank you."], ans:2 },
+    ],
+  },
+  {
+    id: 2, name: "Level 2", cefr: "A1 / A2",
+    topic: "Checking In 🏨",
+    char: "🗺️ Travel Starter",
+    xpNeeded: 200,
+    vocab: [
+      { w:"check in",       ipa:"/tʃek ɪn/",          th:"เช็คอิน",         ex:"I want to check in." },
+      { w:"reservation",    ipa:"/ˌrez.ə.ˈveɪ.ʃən/",   th:"การจอง",          ex:"I have a reservation." },
+      { w:"room",           ipa:"/ruːm/",              th:"ห้องพัก",          ex:"My room is 302." },
+      { w:"key card",       ipa:"/kiː kɑːd/",          th:"บัตรกุญแจ",        ex:"Here is your key card." },
+      { w:"floor",          ipa:"/flɔːr/",             th:"ชั้น",             ex:"The gym is on the 5th floor." },
+      { w:"elevator",       ipa:"/ˈel.ɪ.veɪ.tər/",    th:"ลิฟต์",           ex:"Take the elevator." },
+      { w:"breakfast",      ipa:"/ˈbrek.fəst/",        th:"อาหารเช้า",        ex:"Breakfast is at 7 AM." },
+      { w:"included",       ipa:"/ɪnˈkluː.dɪd/",       th:"รวมอยู่แล้ว",      ex:"Breakfast is included." },
+      { w:"extra",          ipa:"/ˈek.strə/",          th:"เพิ่มเติม",         ex:"An extra bed costs $20." },
+      { w:"single / double",ipa:"/ˈsɪŋ.ɡəl/ˈdʌb.əl/", th:"เตียงเดี่ยว/คู่",  ex:"I'd like a double room." },
+      { w:"view",           ipa:"/vjuː/",              th:"วิว / ทิวทัศน์",    ex:"A room with a sea view." },
+      { w:"check out",      ipa:"/tʃek aʊt/",          th:"เช็คเอาท์",        ex:"Check out at noon." },
+      { w:"receipt",        ipa:"/rɪˈsiːt/",           th:"ใบเสร็จ",          ex:"Can I have the receipt?" },
+      { w:"luggage",        ipa:"/ˈlʌɡ.ɪdʒ/",         th:"กระเป๋าเดินทาง",   ex:"Store my luggage, please." },
+      { w:"available",      ipa:"/əˈveɪ.lə.bəl/",      th:"ว่าง / มี",        ex:"Is a room available tonight?" },
+    ],
+    phrases: [
+      { p:"I have a reservation under [name].", ipa:"/aɪ hæv ə ˌrez.əˈveɪ.ʃən ˈʌn.dər/", th:"ฉันจองไว้ในชื่อ...", ex:"I have a reservation under Smith." },
+      { p:"Is breakfast included?",  ipa:"/ɪz ˈbrek.fəst ɪnˈkluː.dɪd/", th:"อาหารเช้ารวมอยู่ในราคาไหม?", ex:"Excuse me, is breakfast included?" },
+      { p:"Can I have a room with a view?", ipa:"/kæn aɪ hæv ə ruːm wɪð ə vjuː/", th:"ขอห้องที่มีวิวได้ไหม?", ex:"Can I have a room with a sea view?" },
+      { p:"What time is check-out?", ipa:"/wɒt taɪm ɪz tʃek aʊt/", th:"เช็คเอาท์กี่โมง?", ex:"Excuse me, what time is check-out?" },
+      { p:"I'd like a late check-out.", ipa:"/aɪd laɪk ə leɪt tʃek aʊt/", th:"ขอเช็คเอาท์ช้าหน่อยได้ไหม?", ex:"Is it possible? I'd like a late check-out." },
+      { p:"Could you store my luggage?", ipa:"/kʊd juː stɔːr maɪ ˈlʌɡ.ɪdʒ/", th:"ช่วยเก็บกระเป๋าให้ผมได้ไหม?", ex:"Could you store my luggage until 3 PM?" },
+    ],
+    quiz: [
+      { q:"'การจอง' in English is:", choices:["receipt","view","reservation","luggage"], ans:2 },
+      { q:"You want to know about breakfast. You ask:", choices:["Is breakfast included?","What time is check-out?","I need help.","How much?"], ans:0 },
+      { q:"'ลิฟต์' in English is:", choices:["floor","elevator","room","key card"], ans:1 },
+      { q:"'เช็คเอาท์' in English is:", choices:["check in","check out","available","extra"], ans:1 },
+      { q:"'กระเป๋าเดินทาง' in English is:", choices:["bag","receipt","luggage","view"], ans:2 },
+      { q:"Fill in: 'I have a reservation ___ Smith.'", choices:["at","on","under","for"], ans:2 },
+      { q:"You want a late check-out. You say:", choices:["I have a reservation.","I'd like a late check-out.","Where is the toilet?","Can I have a receipt?"], ans:1 },
+      { q:"'ว่าง / มีให้' in English is:", choices:["extra","included","available","single"], ans:2 },
+    ],
+  },
+  {
+    id: 3, name: "Level 3", cefr: "A2 / B1",
+    topic: "Getting Around 🚇",
+    char: "🚀 Travel Explorer",
+    xpNeeded: 350,
+    vocab: [
+      { w:"directions",   ipa:"/daɪˈrek.ʃənz/",    th:"ทิศทาง/วิธีไป",     ex:"Can you give me directions?" },
+      { w:"turn left/right",ipa:"/tɜːn left/raɪt/",th:"เลี้ยวซ้าย/ขวา",    ex:"Turn left at the traffic light." },
+      { w:"straight ahead",ipa:"/streɪt əˈhed/",    th:"ตรงไป",             ex:"Go straight ahead." },
+      { w:"corner",        ipa:"/ˈkɔː.nər/",        th:"มุมถนน",            ex:"It's on the corner." },
+      { w:"block",         ipa:"/blɒk/",            th:"ตึกแถว / ช่วง",     ex:"Two blocks from here." },
+      { w:"subway/metro",  ipa:"/ˈsʌb.weɪ/ˈmet.rəʊ/",th:"รถไฟใต้ดิน",      ex:"Take the subway to Central." },
+      { w:"platform",      ipa:"/ˈplæt.fɔːm/",      th:"ชานชาลา",           ex:"The train is on platform 3." },
+      { w:"transfer",      ipa:"/trænsˈfɜːr/",       th:"เปลี่ยนรถ/สาย",    ex:"Transfer at Central Station." },
+      { w:"fare",          ipa:"/feər/",             th:"ค่าโดยสาร",         ex:"The fare is $2.50." },
+      { w:"timetable",     ipa:"/ˈtaɪm.teɪ.bəl/",   th:"ตารางเวลา",        ex:"Check the timetable." },
+      { w:"departure",     ipa:"/dɪˈpɑː.tʃər/",     th:"การออกเดินทาง",    ex:"Departure at 9 AM." },
+      { w:"arrival",       ipa:"/əˈraɪ.vəl/",        th:"การมาถึง",          ex:"Estimated arrival: 2 PM." },
+      { w:"delay",         ipa:"/dɪˈleɪ/",           th:"ล่าช้า",            ex:"The train is delayed." },
+      { w:"lost",          ipa:"/lɒst/",             th:"หลง",               ex:"I'm lost. Can you help?" },
+      { w:"nearby",        ipa:"/ˈnɪər.baɪ/",        th:"ใกล้เคียง",         ex:"Is there a café nearby?" },
+      { w:"landmark",      ipa:"/ˈlænd.mɑːk/",       th:"จุดสังเกต",         ex:"Use the tower as a landmark." },
+    ],
+    phrases: [
+      { p:"How do I get to ___?", ipa:"/haʊ duː aɪ ɡet tuː/", th:"ฉันจะไป___ได้อย่างไร?", ex:"Excuse me, how do I get to the museum?" },
+      { p:"Could you point me in the right direction?", ipa:"/kʊd juː pɔɪnt miː ɪn ðə raɪt daɪˈrek.ʃən/", th:"ช่วยชี้ทิศทางที่ถูกให้ฉันได้ไหม?", ex:"I'm a bit lost — could you point me in the right direction?" },
+      { p:"Is it within walking distance?", ipa:"/ɪz ɪt wɪˈðɪn ˈwɔː.kɪŋ ˈdɪs.təns/", th:"เดินไปได้ไหม?", ex:"Is the beach within walking distance?" },
+      { p:"Where do I transfer?", ipa:"/weər duː aɪ trænsˈfɜːr/", th:"ต้องเปลี่ยนรถที่ไหน?", ex:"Excuse me, where do I transfer for the airport line?" },
+      { p:"The train is delayed.", ipa:"/ðə treɪn ɪz dɪˈleɪd/", th:"รถไฟล่าช้า", ex:"Announcement: The train is delayed by 20 minutes." },
+      { p:"Take the second left.", ipa:"/teɪk ðə ˈsek.ənd left/", th:"เลี้ยวซ้ายที่สองครับ", ex:"Go straight, then take the second left." },
+    ],
+    quiz: [
+      { q:"'ทิศทาง/วิธีไป' in English is:", choices:["platform","directions","departure","transfer"], ans:1 },
+      { q:"You are lost. You say:", choices:["The train is delayed.","I'm lost. Can you help?","Take the second left.","Where do I transfer?"], ans:1 },
+      { q:"'ค่าโดยสาร' in English is:", choices:["fare","block","delay","corner"], ans:0 },
+      { q:"'ชานชาลา' in English is:", choices:["timetable","arrival","platform","landmark"], ans:2 },
+      { q:"Fill in: 'Go ___ ahead for 3 blocks.'", choices:["turn","left","straight","near"], ans:2 },
+      { q:"You want to know if you can walk there. You ask:", choices:["How do I get there?","Is it within walking distance?","Where do I transfer?","What time is it?"], ans:1 },
+      { q:"'การมาถึง' in English is:", choices:["departure","delay","arrival","transfer"], ans:2 },
+      { q:"'ล่าช้า' in English is:", choices:["lost","nearby","delay","fare"], ans:2 },
+    ],
+  },
+  {
+    id: 4, name: "Level 4", cefr: "B1 / B2",
+    topic: "Restaurants & Food 🍜",
+    char: "⭐ Travel Pro",
+    xpNeeded: 550,
+    vocab: [
+      { w:"menu",          ipa:"/ˈmenjuː/",         th:"เมนู",               ex:"May I see the menu?" },
+      { w:"order",         ipa:"/ˈɔː.dər/",          th:"สั่งอาหาร",          ex:"Are you ready to order?" },
+      { w:"recommend",     ipa:"/ˌrek.əˈmend/",      th:"แนะนำ",             ex:"What do you recommend?" },
+      { w:"allergic to",   ipa:"/əˈlɜː.dʒɪk tuː/",  th:"แพ้",               ex:"I'm allergic to shellfish." },
+      { w:"vegetarian",    ipa:"/ˌvedʒ.ɪˈteə.ri.ən/",th:"มังสวิรัติ",         ex:"Do you have vegetarian options?" },
+      { w:"spicy",         ipa:"/ˈspaɪ.si/",         th:"เผ็ด",              ex:"Is this dish spicy?" },
+      { w:"bill",          ipa:"/bɪl/",              th:"บิล/ใบเสร็จ",        ex:"Could I have the bill?" },
+      { w:"tip",           ipa:"/tɪp/",              th:"ทิป",               ex:"Is service charge included? Should I tip?" },
+      { w:"portion",       ipa:"/ˈpɔː.ʃən/",         th:"ขนาดที่เสิร์ฟ",      ex:"The portions are huge here." },
+      { w:"starter",       ipa:"/ˈstɑː.tər/",        th:"อาหารเรียกน้ำย่อย",  ex:"I'll have the soup as a starter." },
+      { w:"main course",   ipa:"/meɪn kɔːs/",        th:"อาหารจานหลัก",      ex:"For the main course, I'll have steak." },
+      { w:"dessert",       ipa:"/dɪˈzɜːt/",          th:"ของหวาน",           ex:"What's for dessert?" },
+      { w:"well-done/medium/rare",ipa:"/wel dʌn/",   th:"สุกมาก/กลาง/ดิบ",   ex:"I'd like my steak medium-rare." },
+      { w:"takeaway",      ipa:"/ˈteɪk.ə.weɪ/",      th:"สั่งกลับบ้าน",       ex:"Can I get this as a takeaway?" },
+      { w:"reservation",   ipa:"/ˌrez.əˈveɪ.ʃən/",   th:"จองโต๊ะ",           ex:"I have a reservation for two." },
+    ],
+    phrases: [
+      { p:"What do you recommend?", ipa:"/wɒt duː juː ˌrek.əˈmend/", th:"คุณแนะนำอะไร?", ex:"This is my first time here — what do you recommend?" },
+      { p:"I'm allergic to peanuts.", ipa:"/aɪm əˈlɜː.dʒɪk tuː ˈpiː.nʌts/", th:"ฉันแพ้ถั่วลิสง", ex:"Just a heads up — I'm allergic to peanuts." },
+      { p:"Could we get the bill, please?", ipa:"/kʊd wiː ɡet ðə bɪl pliːz/", th:"ขอบิลได้เลยครับ/ค่ะ?", ex:"We're done. Could we get the bill, please?" },
+      { p:"Is service charge included?", ipa:"/ɪz ˈsɜː.vɪs tʃɑːdʒ ɪnˈkluː.dɪd/", th:"รวมค่าบริการแล้วไหม?", ex:"Before I pay, is service charge included?" },
+      { p:"I'd like to make a reservation for two.", ipa:"/aɪd laɪk tuː meɪk ə ˌrez.əˈveɪ.ʃən fɔː tuː/", th:"ขอจองโต๊ะสำหรับสองคน", ex:"Hi, I'd like to make a reservation for two for tonight." },
+      { p:"Could you make it less spicy?", ipa:"/kʊd juː meɪk ɪt les ˈspaɪ.si/", th:"ขอเผ็ดน้อยลงได้ไหม?", ex:"I like Thai food, but could you make it less spicy?" },
+    ],
+    quiz: [
+      { q:"You want to know what's good here. You ask:", choices:["Could we get the bill?","What do you recommend?","Is it spicy?","Do you have dessert?"], ans:1 },
+      { q:"'ของหวาน' in English is:", choices:["starter","portion","dessert","bill"], ans:2 },
+      { q:"'แพ้' (อาหาร) in English is:", choices:["allergic to","vegetarian","recommend","takeaway"], ans:0 },
+      { q:"You are done eating and want to pay. You say:", choices:["What do you recommend?","I'd like to order.","Could we get the bill?","Is breakfast included?"], ans:2 },
+      { q:"'อาหารเรียกน้ำย่อย' in English is:", choices:["main course","dessert","starter","portion"], ans:2 },
+      { q:"Fill in: 'I'm ___ to shellfish.'", choices:["allergic","spicy","vegetarian","order"], ans:0 },
+      { q:"You want food not cooked too much. You say:", choices:["Well-done","Medium-rare","Extra","Takeaway"], ans:1 },
+      { q:"'สั่งกลับบ้าน' in English is:", choices:["reservation","bill","portion","takeaway"], ans:3 },
+    ],
+  },
+  {
+    id: 5, name: "Level 5", cefr: "B2 / C1",
+    topic: "Travel Problems & Solutions 🆘",
+    char: "🌟 Seasoned Traveler",
+    xpNeeded: 800,
+    vocab: [
+      { w:"lost luggage",    ipa:"/lɒst ˈlʌɡ.ɪdʒ/",        th:"กระเป๋าหาย",         ex:"I'm here to report lost luggage." },
+      { w:"claim",           ipa:"/kleɪm/",                 th:"เรียกร้อง / รับสิทธิ์",ex:"File a claim with the airline." },
+      { w:"compensation",    ipa:"/ˌkɒm.penˈseɪ.ʃən/",      th:"ค่าชดเชย",           ex:"Am I entitled to compensation?" },
+      { w:"embassy",         ipa:"/ˈem.bə.si/",             th:"สถานทูต",             ex:"Contact your embassy." },
+      { w:"insurance",       ipa:"/ɪnˈʃʊər.əns/",           th:"ประกัน",              ex:"Do you have travel insurance?" },
+      { w:"overbooked",      ipa:"/ˌəʊ.vəˈbʊkt/",           th:"จองเกิน",            ex:"The flight is overbooked." },
+      { w:"bumped",          ipa:"/bʌmpt/",                 th:"ถูกเด้ง/ถูกยกเลิก",  ex:"I got bumped from my flight." },
+      { w:"stand by",        ipa:"/stænd baɪ/",             th:"สแตนด์บาย",           ex:"I'm on the stand-by list." },
+      { w:"refund",          ipa:"/ˈriː.fʌnd/",             th:"คืนเงิน",             ex:"I'd like a full refund." },
+      { w:"pickpocket",      ipa:"/ˈpɪk.pɒk.ɪt/",           th:"ขโมยล้วงกระเป๋า",    ex:"My wallet was stolen by a pickpocket." },
+      { w:"currency exchange",ipa:"/ˈkʌr.ən.si ɪksˈtʃeɪndʒ/",th:"แลกเงิน",          ex:"Where is the currency exchange?" },
+      { w:"itinerary",       ipa:"/aɪˈtɪn.ər.ər.i/",        th:"กำหนดการเดินทาง",   ex:"My itinerary shows two stops." },
+      { w:"disruption",      ipa:"/dɪsˈrʌp.ʃən/",           th:"การหยุดชะงัก",       ex:"Due to weather disruptions…" },
+      { w:"alternative",     ipa:"/ɔːlˈtɜː.nə.tɪv/",        th:"ทางเลือก",            ex:"Is there an alternative flight?" },
+      { w:"escalate",        ipa:"/ˈes.kə.leɪt/",           th:"ยกระดับ/ร้องเรียน",  ex:"I need to escalate this complaint." },
+    ],
+    phrases: [
+      { p:"I'd like to file a complaint.", ipa:"/aɪd laɪk tuː faɪl ə kəmˈpleɪnt/", th:"ฉันต้องการร้องเรียน", ex:"This is unacceptable. I'd like to file a formal complaint." },
+      { p:"Am I entitled to compensation?", ipa:"/æm aɪ ɪnˈtaɪ.tld tuː ˌkɒm.penˈseɪ.ʃən/", th:"ฉันมีสิทธิ์ได้รับค่าชดเชยไหม?", ex:"My flight was cancelled — am I entitled to compensation?" },
+      { p:"My luggage hasn't arrived.", ipa:"/maɪ ˈlʌɡ.ɪdʒ ˈhæz.ənt əˈraɪvd/", th:"กระเป๋าของฉันยังไม่มา", ex:"I've been waiting 2 hours — my luggage hasn't arrived." },
+      { p:"I need to contact the embassy.", ipa:"/aɪ niːd tuː ˈkɒn.tækt ðiː ˈem.bə.si/", th:"ฉันต้องติดต่อสถานทูต", ex:"My passport was stolen. I need to contact the embassy." },
+      { p:"Is there an earlier/alternative flight?", ipa:"/ɪz ðeər ən ˈɜː.li.ər ˈflɑɪt/", th:"มีเที่ยวบินเร็วกว่านี้ไหม?", ex:"My connection was missed — is there an alternative flight?" },
+      { p:"I'd like a full refund.", ipa:"/aɪd laɪk ə fʊl ˈriː.fʌnd/", th:"ฉันต้องการเงินคืนทั้งหมด", ex:"The service was awful — I'd like a full refund." },
+    ],
+    quiz: [
+      { q:"Your flight was cancelled. You ask:", choices:["Am I entitled to compensation?","Where is the toilet?","I need breakfast.","Is it spicy?"], ans:0 },
+      { q:"'กระเป๋าหาย' in English is:", choices:["stand by","lost luggage","pickpocket","refund"], ans:1 },
+      { q:"'ค่าชดเชย' in English is:", choices:["insurance","compensation","refund","claim"], ans:1 },
+      { q:"You want your money back. You say:", choices:["I'd like to file a complaint.","I'd like a full refund.","Am I on standby?","My luggage hasn't arrived."], ans:1 },
+      { q:"'สถานทูต' in English is:", choices:["insurance","itinerary","embassy","alternative"], ans:2 },
+      { q:"'จองเกิน' in English is:", choices:["bumped","overbooked","disruption","escalate"], ans:1 },
+      { q:"'ทางเลือก' in English is:", choices:["claim","alternative","refund","stand by"], ans:1 },
+      { q:"Your wallet was stolen. You say:", choices:["I'm on standby.","I need to contact the embassy.","The flight is overbooked.","Is there a currency exchange?"], ans:1 },
+    ],
+  },
+  {
+    id: 6, name: "Level 6", cefr: "C1 / C2 / Native",
+    topic: "Advanced Travel Talk 🎓",
+    char: "👑 Global Nomad",
+    xpNeeded: 1200,
+    vocab: [
+      { w:"off the beaten track", ipa:"/ɒf ðə ˈbiː.tən træk/", th:"สถานที่ไม่แออัด/ลับ", ex:"We found a café off the beaten track." },
+      { w:"jet-lagged",           ipa:"/ˈdʒet.læɡd/",           th:"อาการเพลียจากบิน",   ex:"I'm seriously jet-lagged." },
+      { w:"itchy feet",           ipa:"/ˈɪt.ʃi fiːt/",           th:"อยากเดินทาง (สำนวน)",ex:"I've got itchy feet again — time to book a trip!" },
+      { w:"wander",               ipa:"/ˈwɒn.dər/",              th:"เดินเตร่",            ex:"I like to just wander and explore." },
+      { w:"transit visa",         ipa:"/ˈtræn.zɪt ˈviː.zə/",    th:"วีซ่าแวะพัก",         ex:"Do I need a transit visa?" },
+      { w:"lay over / stopover",  ipa:"/ˈleɪ.əʊ.vər/",          th:"แวะพักระหว่างทาง",    ex:"I have an 8-hour layover in Dubai." },
+      { w:"bucket list",          ipa:"/ˈbʌk.ɪt lɪst/",          th:"สิ่งที่อยากทำก่อนตาย",ex:"Seeing the Northern Lights is on my bucket list." },
+      { w:"seasoned traveler",    ipa:"/ˈsiː.zənd ˈtræv.ə.lər/", th:"นักเดินทางผู้มีประสบการณ์",ex:"As a seasoned traveler, she packed light." },
+      { w:"nomadic lifestyle",    ipa:"/nəʊˈmæd.ɪk ˈlaɪf.staɪl/",th:"วิถีชีวิตเร่ร่อน",   ex:"He embraces a nomadic lifestyle." },
+      { w:"culture shock",        ipa:"/ˈkʌl.tʃər ʃɒk/",         th:"ช็อควัฒนธรรม",       ex:"She experienced culture shock in Tokyo." },
+      { w:"serendipity",          ipa:"/ˌser.ənˈdɪp.ɪ.ti/",       th:"ความบังเอิญดี",       ex:"Finding that hidden beach was pure serendipity." },
+      { w:"tread lightly",        ipa:"/tred ˈlaɪt.li/",          th:"เดินทางอย่างไม่ทิ้งร่องรอย",ex:"Remember to tread lightly on local cultures." },
+      { w:"immerse (oneself)",    ipa:"/ɪˈmɜːs/",                 th:"ดำดิ่ง/ซึมซับวัฒนธรรม",ex:"Immerse yourself in the local culture." },
+      { w:"sustainable tourism",  ipa:"/səˈsteɪ.nə.bəl ˈtʊər.ɪ.zəm/",th:"การท่องเที่ยวยั่งยืน",ex:"We practice sustainable tourism." },
+      { w:"rub shoulders with",   ipa:"/rʌb ˈʃəʊl.dərz wɪð/",    th:"คลุกคลีกับ (สำนวน)", ex:"You get to rub shoulders with locals." },
+    ],
+    phrases: [
+      { p:"I've got itchy feet.", ipa:"/aɪv ɡɒt ˈɪt.ʃi fiːt/", th:"ฉันอยากเดินทางอีกแล้ว", ex:"It's been 3 months — I've got itchy feet again!" },
+      { p:"I tend to stray off the beaten track.", ipa:"/aɪ tend tuː streɪ ɒf ðə ˈbiː.tən træk/", th:"ฉันชอบไปที่ที่ไม่แออัด", ex:"I'm not into tourist traps — I tend to stray off the beaten track." },
+      { p:"I like to immerse myself in the local culture.", ipa:"/aɪ laɪk tuː ɪˈmɜːs maɪˈself/", th:"ฉันชอบซึมซับวัฒนธรรมท้องถิ่น", ex:"I skip the guidebooks — I like to immerse myself in the local culture." },
+      { p:"Seeing [place] is still on my bucket list.", ipa:"/ˈbʌk.ɪt lɪst/", th:"การไป___ยังอยู่ใน bucket list ของฉัน", ex:"Seeing the Machu Picchu is still on my bucket list." },
+      { p:"This feels like a hidden gem.", ipa:"/ðɪs fiːlz laɪk ə ˈhɪd.ən dʒem/", th:"ที่นี่เหมือนอัญมณีซ่อนเร้น", ex:"Wow, nobody talks about this place — it feels like a hidden gem." },
+      { p:"I wouldn't have found it if I hadn't wandered.", ipa:"/aɪ ˈwʊd.ənt hæv faʊnd ɪt/", th:"ฉันคงไม่เจอถ้าไม่เดินเตร่", ex:"That restaurant was incredible — I wouldn't have found it if I hadn't wandered." },
+    ],
+    quiz: [
+      { q:"'อยากเดินทาง' (idiomatic) in English is:", choices:["jet-lagged","itchy feet","bucket list","wander"], ans:1 },
+      { q:"'สถานที่ที่ไม่แออัด' in English is:", choices:["off the beaten track","lay over","tread lightly","serendipity"], ans:0 },
+      { q:"'ความบังเอิญดี' in English is:", choices:["culture shock","serendipity","sustainable tourism","nomadic lifestyle"], ans:1 },
+      { q:"You found an amazing hidden place. You say:", choices:["I'm jet-lagged.","This feels like a hidden gem.","I need a transit visa.","I've got itchy feet."], ans:1 },
+      { q:"'ดำดิ่งในวัฒนธรรม' in English is:", choices:["rub shoulders with","tread lightly","immerse yourself","wander"], ans:2 },
+      { q:"'แวะพักระหว่างทาง' in English is:", choices:["transit visa","wander","layover","bucket list"], ans:2 },
+      { q:"'การท่องเที่ยวยั่งยืน' in English is:", choices:["nomadic lifestyle","sustainable tourism","serendipity","culture shock"], ans:1 },
+      { q:"Something amazing that still hasn't happened. You say:", choices:["I've got itchy feet.","I'm jet-lagged.","It's on my bucket list.","I tread lightly."], ans:2 },
+    ],
+  },
+];
+
+// Sentence builder tasks per level
+const SENTENCE_TASKS = [
+  { prompt:"🛫 Build: 'I need help at the airport'", words:["I","need","help","at","the","airport","bus","map"], answer:"I need help at the airport" },
+  { prompt:"🏨 Build: 'I have a reservation'", words:["I","have","a","reservation","taxi","key"], answer:"I have a reservation" },
+  { prompt:"🗺️ Build: 'How do I get to the station?'", words:["How","do","I","get","to","the","station","bus"], answer:"How do I get to the station" },
+  { prompt:"🍜 Build: 'What do you recommend?'", words:["What","do","you","recommend","bill","menu"], answer:"What do you recommend" },
+  { prompt:"🆘 Build: 'My luggage hasn't arrived'", words:["My","luggage","hasn't","arrived","claim","embassy"], answer:"My luggage hasn't arrived" },
+  { prompt:"🌍 Build: 'I like to immerse myself in the local culture'", words:["I","like","to","immerse","myself","in","the","local","culture","wander"], answer:"I like to immerse myself in the local culture" },
+];
+
+// Picture scene tasks
+const PICTURE_SCENES = [
+  { emoji:"🛂✈️🧳", hints:["You just landed at a foreign airport","You hand over a small book with your photo","The officer stamps something"], choices:["Shopping at a market","Going through passport control","Checking into a hotel","Boarding a train"], ans:1 },
+  { emoji:"🛏️🔑🌅", hints:["You walk to the front desk","You give your name and booking number","They hand you a small plastic card"], choices:["Checking in to a hotel","Boarding a flight","Eating at a restaurant","Renting a car"], ans:0 },
+  { emoji:"🚇🗺️😕", hints:["You're underground","Lots of colored lines on a map","You're not sure which way to go"], choices:["Lost at the airport","Navigating the subway","Waiting for a taxi","Ordering at a café"], ans:1 },
+  { emoji:"🍽️👨‍🍳💳", hints:["You've finished your meal","You raise your hand to get attention","You mention a number that represents what you owe"], choices:["Ordering breakfast","Asking for the bill","Complaining about food","Making a reservation"], ans:1 },
+  { emoji:"🧳❌😤✈️", hints:["You waited at the belt for a long time","Your bag never appeared","You walk to a service counter"], choices:["Buying duty-free","Lost luggage report","Passport control","Flight boarding"], ans:1 },
+  { emoji:"🌿🏔️🚶‍♂️📵", hints:["No crowds anywhere","You're on a mountain path","No phone signal","No tourist shops in sight"], choices:["Visiting a theme park","Exploring off the beaten track","Airport transit","Shopping in a mall"], ans:2 },
+];
+
+// Listening dialogues
+const LISTEN_DIALOGUES = [
+  {
+    script:`<strong>🎙️ At the Airport Counter:</strong><br><br>
+    <em>Staff:</em> "Good morning! Can I see your passport, please?"<br>
+    <em>Traveler:</em> "Of course. Here you go."<br>
+    <em>Staff:</em> "Window or aisle seat?"<br>
+    <em>Traveler:</em> "Window, please."<br>
+    <em>Staff:</em> "Any bags to check in?"<br>
+    <em>Traveler:</em> "Yes, one large suitcase."`,
+    q:"What seat does the traveler want?",
+    choices:["Aisle seat","Window seat","Middle seat","Business class"],
+    ans:1
+  },
+  {
+    script:`<strong>🎙️ At the Hotel:</strong><br><br>
+    <em>Guest:</em> "Hi, I have a reservation under the name Johnson."<br>
+    <em>Staff:</em> "Welcome! Let me check... Yes, a double room for three nights."<br>
+    <em>Guest:</em> "Is breakfast included?"<br>
+    <em>Staff:</em> "Absolutely! It's served from 7 to 10 AM."<br>
+    <em>Guest:</em> "Perfect. And what floor am I on?"<br>
+    <em>Staff:</em> "Room 504, on the fifth floor."`,
+    q:"When is breakfast served?",
+    choices:["6 to 9 AM","7 to 10 AM","8 to 11 AM","All day"],
+    ans:1
+  },
+  {
+    script:`<strong>🎙️ Asking for Directions:</strong><br><br>
+    <em>Tourist:</em> "Excuse me, how do I get to the central market?"<br>
+    <em>Local:</em> "Sure! Go straight ahead for two blocks, then turn left at the traffic light."<br>
+    <em>Tourist:</em> "Is it far?"<br>
+    <em>Local:</em> "About ten minutes on foot. You'll see a big clock tower — that's a landmark."<br>
+    <em>Tourist:</em> "Great, thank you so much!"`,
+    q:"What should the tourist look for as a landmark?",
+    choices:["A big tree","A red bridge","A big clock tower","A blue sign"],
+    ans:2
+  },
+];
+
+// ══════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════
+
+let state = {
+  currentLevel: 1,
+  totalXP: 0,
+  xpInLevel: 0,
+  unlockedLevels: [1],
+  quizScores: {},    // levelId -> best score %
+  achievements: [],
+};
+
+// Load from localStorage
+function loadState() {
+  const saved = localStorage.getItem('travelQuestState');
+  if (saved) try { state = JSON.parse(saved); } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem('travelQuestState', JSON.stringify(state));
+}
+
+// ══════════════════════════════════════
+//  XP SYSTEM
+// ══════════════════════════════════════
+
+function addXP(amount, msg) {
+  state.totalXP += amount;
+  state.xpInLevel += amount;
+  const level = getCurrentLevel();
+  if (state.xpInLevel >= level.xpNeeded) {
+    state.xpInLevel = state.xpInLevel - level.xpNeeded;
+    tryUnlockNextLevel();
+  }
+  saveState();
+  updateHeader();
+  showToast(msg || `+${amount} XP! 🌟`);
+}
+
+function updateHeader() {
+  const level = getCurrentLevel();
+  document.getElementById('totalXP').textContent = state.totalXP;
+  document.getElementById('levelLabel').textContent = `⭐ ${level.name}`;
+  document.getElementById('cefrLabel').textContent = level.cefr;
+  document.getElementById('charBadge').textContent = level.char;
+  const pct = Math.min(100, Math.round((state.xpInLevel / level.xpNeeded) * 100));
+  document.getElementById('xpBar').style.width = pct + '%';
+  document.getElementById('xpText').textContent = `${state.xpInLevel} / ${level.xpNeeded}`;
+}
+
+function tryUnlockNextLevel() {
+  const nextId = state.currentLevel + 1;
+  if (nextId <= LEVELS.length && !state.unlockedLevels.includes(nextId)) {
+    state.unlockedLevels.push(nextId);
+    showToast(`🔓 Level ${nextId} Unlocked!`);
+    checkAchievements();
+  }
+}
+
+// ══════════════════════════════════════
+//  PAGE NAVIGATION
+// ══════════════════════════════════════
+
+const PAGES = ['pageHome','pageLearn','pagePhrases','pageQuiz','pageResult','pageSentence','pagePicture','pageListening','pageProgress','pageTopics'];
+
+function showPage(id) {
+  PAGES.forEach(p => document.getElementById(p).classList.toggle('section-hidden', p !== id));
+  window.scrollTo(0, 0);
+  if (id === 'pageHome') renderHome();
+  if (id === 'pageLearn') renderLearn();
+  if (id === 'pagePhrases') renderPhrases();
+  if (id === 'pageProgress') renderProgress();
+  if (id === 'pageTopics') renderTopics();
+}
+
+function setNav(activeId) {
+  ['nav-home','nav-learn','nav-quiz','nav-prog'].forEach(n => {
+    document.getElementById(n).classList.toggle('active', n === activeId);
+  });
+}
+
+// ══════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════
+
+function renderHome() {
+  const level = getCurrentLevel();
+  document.getElementById('levelSummary').innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+      <span style="font-size:36px">🌍</span>
+      <div>
+        <div style="font-weight:700;font-size:15px;color:var(--accent2)">${level.name}: ${level.topic}</div>
+        <div style="font-size:12px;color:var(--muted)">${level.cefr} · ${level.vocab.length} words · ${level.phrases.length} phrases</div>
+        ${state.quizScores[level.id] ? `<div style="font-size:12px;color:var(--green)">✅ Best quiz: ${state.quizScores[level.id]}%</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════
+//  LEARN
+// ══════════════════════════════════════
+
+function renderLearn() {
+  const level = getCurrentLevel();
+  document.getElementById('learnTitle').innerHTML = `📖 ${level.name}: ${level.topic} <span class="cefr-tag">${level.cefr}</span>`;
+  const tbody = document.getElementById('vocabBody');
+  tbody.innerHTML = level.vocab.map(v => `
+    <tr>
+      <td><span class="word">${v.w}</span><br><span class="ipa">${v.ipa}</span></td>
+      <td><span class="thai">${v.th}</span></td>
+      <td><span class="example">${v.ex}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+//  PHRASES
+// ══════════════════════════════════════
+
+function renderPhrases() {
+  const level = getCurrentLevel();
+  document.getElementById('phraseList').innerHTML = level.phrases.map(p => `
+    <div class="phrase-item">
+      <div class="phrase-en">💬 ${p.p}</div>
+      <div class="phrase-ipa">${p.ipa}</div>
+      <div class="phrase-th">🇹🇭 ${p.th}</div>
+      <div class="phrase-ex">📝 ${p.ex}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════
+
+let quizState = { questions:[], current:0, score:0, hits:[] };
+
+function startQuiz() {
+  setNav('nav-quiz');
+  showPage('pageQuiz');
+  const level = getCurrentLevel();
+  const qs = [...level.quiz].sort(() => Math.random() - 0.5).slice(0, 8);
+  quizState = { questions: qs, current: 0, score: 0, hits: [] };
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const qs = quizState.questions;
+  const idx = quizState.current;
+  if (idx >= qs.length) { finishQuiz(); return; }
+  const q = qs[idx];
+
+  // Score dots
+  const dots = qs.map((_,i) => {
+    if (i < idx) return `<div class="score-dot ${quizState.hits[i] ? 'hit' : 'miss'}"></div>`;
+    return `<div class="score-dot"></div>`;
+  }).join('');
+  document.getElementById('scoreDots').innerHTML = dots;
+  document.getElementById('quizProgress').textContent = `Question ${idx+1} of ${qs.length}`;
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('quizFeedback').innerHTML = '';
+  document.getElementById('btnNextQ').classList.add('section-hidden');
+
+  document.getElementById('quizChoices').innerHTML = q.choices.map((c,i) =>
+    `<button class="quiz-choice" onclick="answerQuiz(${i})">${c}</button>`
+  ).join('');
+}
+
+function answerQuiz(chosen) {
+  const q = quizState.questions[quizState.current];
+  const correct = chosen === q.ans;
+  const btns = document.querySelectorAll('.quiz-choice');
+  btns.forEach(b => b.classList.add('disabled'));
+  btns[q.ans].classList.add('correct');
+  if (!correct) btns[chosen].classList.add('wrong');
+
+  quizState.hits.push(correct);
+  if (correct) quizState.score++;
+
+  document.getElementById('quizFeedback').innerHTML = correct
+    ? `<div class="feedback correct">✅ Correct! Well done! 🎉</div>`
+    : `<div class="feedback wrong">❌ The answer is: <strong>${q.choices[q.ans]}</strong></div>`;
+
+  document.getElementById('btnNextQ').classList.remove('section-hidden');
+}
+
+function nextQuestion() {
+  quizState.current++;
+  renderQuestion();
+}
+
+function finishQuiz() {
+  const total = quizState.questions.length;
+  const score = quizState.score;
+  const pct = Math.round((score/total)*100);
+  const level = getCurrentLevel();
+  const pass = pct >= 80;
+
+  if (!state.quizScores[level.id] || pct > state.quizScores[level.id]) {
+    state.quizScores[level.id] = pct;
+  }
+
+  let xpEarned = pass ? 80 : 30;
+  addXP(xpEarned, `Quiz done! +${xpEarned} XP`);
+
+  document.getElementById('resultEmoji').textContent = pct >= 90 ? '🏆' : pct >= 80 ? '🌟' : pct >= 60 ? '👍' : '😅';
+  document.getElementById('resultTitle').textContent = pct >= 90 ? 'Excellent!' : pct >= 80 ? 'Great Job!' : pct >= 60 ? 'Good Try!' : 'Keep Practicing!';
+  document.getElementById('resultScore').textContent = `${score} / ${total} correct · ${pct}%`;
+  document.getElementById('resultXP').textContent = `🌟 +${xpEarned} XP earned!`;
+
+  const nextEl = document.getElementById('resultNextUnlock');
+  if (pass && state.currentLevel < LEVELS.length) {
+    const nextLevel = LEVELS[state.currentLevel];
+    nextEl.innerHTML = `<div class="feedback correct" style="margin:10px 0">🔓 You can now try <strong>${nextLevel.name}: ${nextLevel.topic}</strong>!</div>
+    <button class="btn btn-gold" onclick="goNextLevel()">🚀 Go to ${nextLevel.name}</button>`;
+  } else if (!pass) {
+    nextEl.innerHTML = `<div class="feedback info" style="margin:10px 0">💡 Score 80%+ to unlock the next level. Review the words and try again!</div>`;
+  } else {
+    nextEl.innerHTML = `<div class="feedback xp" style="margin:10px 0">🌍 You've mastered all levels! You're a true Global Nomad!</div>`;
+  }
+
+  showPage('pageResult');
+  checkAchievements();
+  saveState();
+}
+
+function goNextLevel() {
+  if (state.currentLevel < LEVELS.length) {
+    state.currentLevel++;
+    saveState();
+    updateHeader();
+    renderHome();
+    showPage('pageHome');
+  }
+}
+
+// ══════════════════════════════════════
+//  SENTENCE BUILDER
+// ══════════════════════════════════════
+
+let sentState = { task: null, built: [] };
+
+function startSentence() {
+  const idx = Math.min(state.currentLevel - 1, SENTENCE_TASKS.length - 1);
+  sentState.task = SENTENCE_TASKS[idx];
+  sentState.built = [];
+  showPage('pageSentence');
+  renderSentence();
+}
+
+function renderSentence() {
+  const task = sentState.task;
+  document.getElementById('sentencePrompt').textContent = task.prompt;
+  document.getElementById('sentenceBox').textContent = sentState.built.join(' ') || 'Tap words below to build your sentence...';
+  document.getElementById('sentenceFeedback').innerHTML = '';
+
+  const shuffled = [...task.words].sort(() => Math.random() - 0.5);
+  document.getElementById('wordChips').innerHTML = shuffled.map((w,i) =>
+    `<div class="chip" id="chip_${i}" onclick="addWord('${w}', 'chip_${i}')">${w}</div>`
+  ).join('');
+}
+
+function addWord(w, id) {
+  sentState.built.push(w);
+  document.getElementById('sentenceBox').textContent = sentState.built.join(' ');
+  document.getElementById(id).classList.add('used');
+  document.getElementById('sentenceFeedback').innerHTML = '';
+}
+
+function clearSentence() {
+  sentState.built = [];
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('used'));
+  document.getElementById('sentenceBox').textContent = 'Tap words below to build your sentence...';
+  document.getElementById('sentenceFeedback').innerHTML = '';
+}
+
+function checkSentence() {
+  const built = sentState.built.join(' ').trim().replace(/[?!.]/g,'');
+  const answer = sentState.task.answer.replace(/[?!.]/g,'');
+  const correct = built.toLowerCase() === answer.toLowerCase();
+  if (correct) {
+    document.getElementById('sentenceFeedback').innerHTML = `<div class="feedback correct">✅ Perfect sentence! 🎉 +25 XP</div>`;
+    addXP(25, '✏️ Correct sentence! +25 XP');
+  } else {
+    document.getElementById('sentenceFeedback').innerHTML = `<div class="feedback wrong">❌ Almost! Try again.<br><small>Hint: ${sentState.task.answer}</small></div>`;
+  }
+}
+
+// ══════════════════════════════════════
+//  PICTURE SCENE
+// ══════════════════════════════════════
+
+let picState = { scene: null, hintsRevealed: 0 };
+
+function startPicture() {
+  const idx = Math.min(state.currentLevel - 1, PICTURE_SCENES.length - 1);
+  picState.scene = PICTURE_SCENES[idx];
+  picState.hintsRevealed = 1;
+  showPage('pagePicture');
+  renderPicture();
+}
+
+function renderPicture() {
+  const scene = picState.scene;
+  document.getElementById('sceneEmoji').textContent = scene.emoji;
+  renderHints();
+  document.getElementById('pictureFeedback').innerHTML = '';
+  document.getElementById('pictureChoices').innerHTML = scene.choices.map((c,i) =>
+    `<button class="quiz-choice" onclick="answerPicture(${i})">${c}</button>`
+  ).join('');
+}
+
+function renderHints() {
+  const scene = picState.scene;
+  document.getElementById('sceneHints').innerHTML = scene.hints.slice(0, picState.hintsRevealed).map(h =>
+    `<li>💡 ${h}</li>`
+  ).join('');
+  document.getElementById('btnRevealHint').style.display =
+    picState.hintsRevealed >= scene.hints.length ? 'none' : 'inline-block';
+}
+
+function revealHint() {
+  if (picState.hintsRevealed < picState.scene.hints.length) {
+    picState.hintsRevealed++;
+    state.totalXP = Math.max(0, state.totalXP - 5);
+    saveState();
+    updateHeader();
+    renderHints();
+    showToast('💡 Hint revealed! -5 XP');
+  }
+}
+
+function answerPicture(chosen) {
+  const scene = picState.scene;
+  const correct = chosen === scene.ans;
+  document.querySelectorAll('#pictureChoices .quiz-choice').forEach(b => b.classList.add('disabled'));
+  document.querySelectorAll('#pictureChoices .quiz-choice')[scene.ans].classList.add('correct');
+  if (!correct) document.querySelectorAll('#pictureChoices .quiz-choice')[chosen].classList.add('wrong');
+
+  if (correct) {
+    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback correct">✅ Correct! You got it! +30 XP 🎉</div>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="startPicture()">🔄 Next Scene</button>`;
+    addXP(30, '🖼️ Scene guessed! +30 XP');
+  } else {
+    document.getElementById('pictureFeedback').innerHTML = `<div class="feedback wrong">❌ The answer is: <strong>${scene.choices[scene.ans]}</strong><br>+5 XP for trying!</div>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="startPicture()">🔄 Try Another</button>`;
+    addXP(5, '🖼️ +5 XP for trying!');
+  }
+}
+
+// ══════════════════════════════════════
+//  LISTENING
+// ══════════════════════════════════════
+
+let listenIdx = 0;
+
+function startListening() {
+  listenIdx = Math.min(state.currentLevel - 1, LISTEN_DIALOGUES.length - 1);
+  showPage('pageListening');
+  renderListening();
+}
+
+function renderListening() {
+  const d = LISTEN_DIALOGUES[listenIdx];
+  document.getElementById('listeningScript').innerHTML = `<div class="card" style="margin:0 0 14px; font-size:13px; line-height:1.8">${d.script}</div>`;
+  document.getElementById('listeningQ').innerHTML = `<div class="quiz-q">❓ ${d.q}</div>`;
+  document.getElementById('listeningFeedback').innerHTML = '';
+  document.getElementById('btnNextListen').classList.add('section-hidden');
+  document.getElementById('listeningChoices').innerHTML = d.choices.map((c,i) =>
+    `<button class="quiz-choice" onclick="answerListening(${i})">${c}</button>`
+  ).join('');
+}
+
+function answerListening(chosen) {
+  const d = LISTEN_DIALOGUES[listenIdx];
+  const correct = chosen === d.ans;
+  document.querySelectorAll('#listeningChoices .quiz-choice').forEach(b => b.classList.add('disabled'));
+  document.querySelectorAll('#listeningChoices .quiz-choice')[d.ans].classList.add('correct');
+  if (!correct) document.querySelectorAll('#listeningChoices .quiz-choice')[chosen].classList.add('wrong');
+
+  if (correct) {
+    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback correct">✅ Correct! 🎧 Great listening! +35 XP</div>`;
+    addXP(35, '🎧 Listening correct! +35 XP');
+  } else {
+    document.getElementById('listeningFeedback').innerHTML = `<div class="feedback wrong">❌ Answer: <strong>${d.choices[d.ans]}</strong> — Read again carefully!</div>`;
+    addXP(10, '🎧 +10 XP for trying!');
+  }
+  document.getElementById('btnNextListen').classList.remove('section-hidden');
+}
+
+function nextListening() {
+  listenIdx = (listenIdx + 1) % LISTEN_DIALOGUES.length;
+  renderListening();
+}
+
+// ══════════════════════════════════════
+//  PROGRESS
+// ══════════════════════════════════════
+
+function renderProgress() {
+  const html = LEVELS.map(l => {
+    const unlocked = state.unlockedLevels.includes(l.id);
+    const score = state.quizScores[l.id];
+    const isCurrent = l.id === state.currentLevel;
+    return `
+      <div style="background:${isCurrent?'rgba(124,58,237,0.15)':'#1e1b4b'};border:1px solid ${isCurrent?'var(--accent)':'var(--border)'};border-radius:10px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-weight:700;color:${unlocked?'var(--accent2)':'var(--muted)'}">${l.name}: ${l.topic}</span>
+            <div style="font-size:11px;color:var(--muted)">${l.cefr}</div>
+          </div>
+          <div style="text-align:right">
+            ${unlocked ? (score ? `<div style="color:var(--green);font-size:13px">✅ ${score}%</div>` : `<div style="color:var(--muted);font-size:12px">Not quizzed</div>`) : `<div style="font-size:18px">🔒</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('progressContent').innerHTML = html;
+
+  // Achievements
+  const all = getAllAchievements();
+  document.getElementById('achievementList').innerHTML = all.map(a => `
+    <div class="achievement ${state.achievements.includes(a.id) ? '' : 'section-hidden' }">
+      <div class="achievement-icon">${a.icon}</div>
+      <div><div class="achievement-name">${a.name}</div><div class="achievement-desc">${a.desc}</div></div>
+    </div>
+  `).join('') || '<div style="color:var(--muted);font-size:13px">Complete quizzes to earn achievements!</div>';
+}
+
+// ══════════════════════════════════════
+//  TOPICS / LEVEL SELECT
+// ══════════════════════════════════════
+
+function renderTopics() {
+  document.getElementById('topicsList').innerHTML = LEVELS.map(l => {
+    const unlocked = state.unlockedLevels.includes(l.id);
+    return `
+      <div class="menu-btn" style="margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:12px;padding:14px"
+        onclick="${unlocked ? `selectLevel(${l.id})` : 'showToast(\"🔒 Complete previous level quiz at 80%+ to unlock!\")'}"
+      >
+        <div style="font-size:28px">${unlocked ? '🔓' : '🔒'}</div>
+        <div>
+          <div style="font-weight:700;color:${unlocked?'var(--accent2)':'var(--muted)'}">${l.name}: ${l.topic}</div>
+          <div style="font-size:11px;color:var(--muted)">${l.cefr} · ${l.char}</div>
+        </div>
+        <span class="cefr-tag" style="margin-left:auto">${l.cefr.split('/')[0].trim()}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectLevel(id) {
+  state.currentLevel = id;
+  saveState();
+  updateHeader();
+  showPage('pageHome');
+}
+
+// ══════════════════════════════════════
+//  ACHIEVEMENTS
+// ══════════════════════════════════════
+
+function getAllAchievements() {
+  return [
+    { id:'first_quiz', icon:'🎯', name:'First Quiz!', desc:'Complete your first quiz' },
+    { id:'perfect_quiz', icon:'💯', name:'Perfect Score!', desc:'Get 100% on any quiz' },
+    { id:'level2', icon:'🔓', name:'Level 2 Unlocked!', desc:'Progress to Level 2' },
+    { id:'level3', icon:'🚀', name:'Explorer!', desc:'Reach Level 3' },
+    { id:'xp500', icon:'💎', name:'500 XP!', desc:'Earn 500 total XP' },
+    { id:'xp1000', icon:'👑', name:'XP Master!', desc:'Earn 1000 total XP' },
+  ];
+}
+
+function checkAchievements() {
+  const add = (id) => { if (!state.achievements.includes(id)) { state.achievements.push(id); showToast('🏅 Achievement unlocked!'); } };
+  if (Object.keys(state.quizScores).length >= 1) add('first_quiz');
+  if (Object.values(state.quizScores).some(s => s === 100)) add('perfect_quiz');
+  if (state.unlockedLevels.includes(2)) add('level2');
+  if (state.unlockedLevels.includes(3)) add('level3');
+  if (state.totalXP >= 500) add('xp500');
+  if (state.totalXP >= 1000) add('xp1000');
+  saveState();
+}
+
+// ══════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════
+
+function getCurrentLevel() {
+  return LEVELS.find(l => l.id === state.currentLevel) || LEVELS[0];
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+
+loadState();
+updateHeader();
+renderHome();
+</script>
+</body>
+</html>
